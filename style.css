@@ -110,7 +110,7 @@ nav button:hover {
 }
 
 #b2 {
-    background:linear-gradient(to top, yellow, purple);
+    background: linear-gradient(to top, yellow, purple);
     animation: b2 5s linear infinite;
 }
 @keyframes b2 {
@@ -163,7 +163,6 @@ nav button:hover {
 .snap {
     width: 20rem;
     height: 20rem;
-    background: white;
     display: flex;
     overflow-x: scroll;
     scroll-snap-type: x mandatory;
