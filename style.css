@@ -146,8 +146,8 @@ nav button:hover {
     background: linear-gradient(to right,#437ccd,#45d6ca);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: fade 1s ease-in 1s forwards;
     pointer-events: none;
+    animation: fade 1s ease-in 1s forwards;
     opacity: 0;
 }
 
