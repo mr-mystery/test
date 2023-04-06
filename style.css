@@ -140,7 +140,7 @@ nav button:hover {
 
 /* Side Text */
 
-.grad {
+.gradient-text {
     font-size: 100px;
     writing-mode: vertical-lr;
     background: linear-gradient(to right,#437ccd,#45d6ca);
