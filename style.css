@@ -28,18 +28,22 @@ hr {
 
 /* Width */
 /* ::-webkit-scrollbar {
-    width: 10px;
+    OLD width: 10px; (comment out)
+    width: .5vw;
 } */
 
 /* Track */
 /* ::-webkit-scrollbar-track {
-    background: #222;
+    background-color: #222;
 } */
 
 /* Handle */
 /* ::-webkit-scrollbar-thumb {
-    background: #bebebe;
+    background-color: #bebebe;
     border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: #bebebec0;
 } */
 
 
