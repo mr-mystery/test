@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Saket's Website | Three JS</title>
+    <link rel="shortcut icon" href="../../images/blue-thumbs-up-icon.png"/>
+
+    <style>
+        html, body {
+            background-color: #181818;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .webgl {
+            position: fixed;
+            top: 0;
+            left: 0;
+            outline: none;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <canvas class="webgl"></canvas>
+
+    <!-- <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/87/three.min.js'></script>
+    <script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/127738/OrbitControls.js'></script>
+    <script src='https://s3-us-west-2.amazonaws.com/s.cdpn.io/127738/perlin.js'></script> -->
+
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@v0.151.3/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@v0.151.3/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module" src="main.js"></script>
+
+</body>
+
+</html>

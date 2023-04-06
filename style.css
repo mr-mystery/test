@@ -1,0 +1,221 @@
+body {
+    background-color: #141414;
+    padding: 10px;
+}
+
+:root {
+    /* https://developer.mozilla.org/en-US/docs/Web/CSS/color-scheme */
+    color-scheme: dark;
+}
+
+* {
+    color: white;
+}
+
+hr {
+    border: 1px solid white;
+}
+
+.flex {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+
+/* Scroll Bar */
+
+/* Width */
+/* ::-webkit-scrollbar {
+    width: 10px;
+} */
+
+/* Track */
+/* ::-webkit-scrollbar-track {
+    background: #222;
+} */
+
+/* Handle */
+/* ::-webkit-scrollbar-thumb {
+    background: #bebebe;
+    border-radius: 10px;
+} */
+
+
+
+/* NAV */
+
+.nav {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+}
+
+.nav a {
+    text-decoration: none;
+}
+
+.nav button {
+    padding: 20px 15px;
+
+    background-color: #36393f;
+    border: 1px solid black;
+    border-radius: 25px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    transition: all 100ms;
+}
+.nav button:hover {
+    background-color: #36393f91;
+}
+
+
+
+/* SPIN BOX */
+
+.spinBoxCon {
+    display: flex;
+    justify-content: center;
+    padding: 55px 0px;
+    gap: 55px;
+}
+.spinBox {
+    box-shadow: 0px 0px 10px 1px white;
+    width: 200px;
+    height: 200px;
+
+    border: 2px solid #ffffff;
+    border-radius: 25px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#b1 {
+    background: linear-gradient(to right top, orange, blue);
+    animation: b1 5s linear infinite;
+}
+@keyframes b1 {
+    0% { rotate: 0deg; }
+    100% { rotate: 360deg; }
+}
+
+#b2 {
+    background:linear-gradient(to top, yellow, purple);
+    animation: b2 5s linear infinite;
+}
+@keyframes b2 {
+    0% { rotate: x 0deg; }
+    100% { rotate: x 360deg; }
+}
+
+#b3 {
+    background: linear-gradient(to right, red, green);
+    animation: b3 5s linear infinite;
+}
+@keyframes b3 {
+    0% { rotate: y 0deg; }
+    100% { rotate: y 360deg; }
+}
+
+#b4 {
+    background: linear-gradient(to right, black, white);
+    animation: b4 5s linear infinite;
+}
+@keyframes b4 {
+    0% { transform: rotate3d(1, 1, 1, 0deg); }
+    100% { transform: rotate3d(1, 1, 1, 360deg); }
+}
+
+
+
+/* Side Text */
+
+.grad {
+    font-size: 100px;
+    writing-mode: vertical-lr;
+    background: linear-gradient(to right,#437ccd,#45d6ca);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: fade 1s ease-in 1s forwards;
+    pointer-events: none;
+    opacity: 0;
+}
+
+@keyframes fade {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+
+
+/* Snap */
+
+.snap {
+    width: 20rem;
+    height: 20rem;
+    background: white;
+    display: flex;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+}
+
+.snap div {
+    min-width: 20rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10rem;
+    scroll-snap-align: center;
+}
+
+.snapBox:nth-child(1) {
+    background-color: red;
+}
+.snapBox:nth-child(2) {
+    background-color: indianred;
+}
+.snapBox:nth-child(3) {
+    background-color: violet;
+}
+.snapBox:nth-child(4) {
+    background-color: cyan;
+}
+.snapBox:nth-child(5) {
+    background-color: darkcyan;
+}
+
+
+
+/* Resize Box */
+
+.resize {
+    margin: 0px 20px;
+    padding: 2rem;
+    border: 1px solid black;
+    overflow: auto;
+    resize: both;
+    background-color: #36393f;
+}
+
+
+
+/* Hacked Text Effect */
+
+#hacked {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(3rem, 6.25vw, 10rem);
+    color: white;
+    padding: 0rem clamp(1rem, 2vw, 3rem);
+    border-radius: clamp(0.4rem, 0.75vw, 1rem);
+}
+
+#hacked:hover {
+    background-color: white;
+    color: black;
+}
