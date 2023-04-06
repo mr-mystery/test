@@ -10,7 +10,7 @@ import * as THREE from 'three';
 
 //Loading
 const textureLoader = new THREE.TextureLoader();
-const NormalMap = textureLoader.load('../-images/NormalMap.png');
+const NormalMap = textureLoader.load('../-images/normal-map.png');
 
 
 // Debug
