@@ -43,6 +43,6 @@ document.querySelector("#hacked").onmouseover = (event) => {
             clearInterval(interval);
         };
 
-        iteration += 1 / 3;
+        iteration += (1 / 3);
     }, 30);
 };

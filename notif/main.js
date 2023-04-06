@@ -33,8 +33,8 @@ document.getElementById('note').addEventListener('click', () => {
         const Notif = new Notification("Example Notification", {
             body: "Math.random() is cool! " + Math.random(),
             data: { hello: "world" },
-            icon: "images/blue-thumbs-up-icon.png",
-            image: "images/blue-thumbs-up-icon.png",
+            icon: "../-images/blue-thumbs-up-icon.png",
+            image: "../-images/blue-thumbs-up-icon.png",
             tag: "test",
         });
 

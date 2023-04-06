@@ -46,17 +46,17 @@ hr {
 
 /* NAV */
 
-.nav {
+nav {
     display: flex;
     justify-content: center;
     gap: 25px;
 }
 
-.nav a {
+nav a {
     text-decoration: none;
 }
 
-.nav button {
+nav button {
     padding: 20px 15px;
 
     background-color: #36393f;
@@ -69,7 +69,7 @@ hr {
 
     transition: all 100ms;
 }
-.nav button:hover {
+nav button:hover {
     background-color: #36393f91;
 }
 

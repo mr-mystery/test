@@ -12,7 +12,6 @@ document.addEventListener("mousemove", (e) => {
     let mouseY = e.clientY;
 
     let angleDeg;
-
     // angleDeg = angle(mouseX, mouseY, anchorX, anchorY); //Comment this for independent eye follow
 
     eyes.forEach((eye) => {

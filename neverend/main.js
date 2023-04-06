@@ -32,8 +32,8 @@ const lastCardObserver = new IntersectionObserver(
     {
         rootMargin: "125px",
         // Changes root element's bounding box
-        // 50px makes the code run 50px before entering screen 
-        // -50px makes the code run 50px after entering screen 
+        // Ex: 50px makes the code run 50px before entering screen 
+        // Ex: -50px makes the code run 50px after entering screen 
     }
 );
 
