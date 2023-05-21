@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+Tamma+2:wght@400;500;600;700;800&display=swap');
+/* font-family: 'Baloo Tamma 2', cursive; */
+
+body {
+    font-family: 'Baloo Tamma 2', sans-serif;
+    background-color: #305056;
+    padding: 0;
+    margin: 0;
+}
+
+h1, h2 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    text-align: center;
+    text-transform: uppercase;
+}
+h1 {
+    font-size: 5vw;
+    line-height: 40px;
+    font-weight: 700;
+}
+h2 {
+    font-size: 30px;
+    line-height: 1.4;
+    font-weight: 500;
+}
+
+.hero {
+    min-height: 700px;
+    height: 55vw;
+    max-height: 1200px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-bg, .upper {
+    position: absolute;
+    left: 0%;
+    top: 0%;
+    right: 0%;
+    bottom: 0%;
+    background-position: 50% 100%;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    transition: all 85ms ease;
+}
+
+.hero-bg._1 {
+    background-image: url("../-images/parallax/bg1.svg");
+}
+
+.hero-bg._2 {
+    background-image: url("../-images/parallax/bg2.svg");
+    transform: translateY(40px);
+}
+
+.hero-bg._3 {
+    background-image: url("../-images/parallax/bg3.svg");
+}
+
+.hero-bg._4 {
+    background-image: url("../-images/parallax/bg4.svg");
+}
+
+.hero-bg._5 {
+    background-image: url("../-images/parallax/bg5.svg");
+}
+
+.hero-bg._6 {
+    background-image: url("../-images/parallax/bg6.svg");
+}
+
+.upper {
+    height: 99%;
+    background-image: linear-gradient(180deg, #f26522, #ffeec7 61%);
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center top;
+}
+
+.sun {
+    position: absolute;
+    left: auto;
+    top: auto;
+    right: 23vw;
+    bottom: 36vw;
+    width: 5vw;
+    height: 5vw;
+    border-radius: 50%;
+    background-color: #fff9ee;
+}
+
+.hero-bg.header {
+    position: absolute;
+    /* max-height: 1100px; */
+    padding-bottom: 10px;
+    /* min-height: 800px; */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: none;
+    color: #e1f4ff;
+}
+.header {
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+.site {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: -1px;
+    padding-top: 40px;
+    padding-bottom: 80px;
+    background-color: #305056;
+    color: #fff;
+}
+
+@media screen and (max-width: 991px) {
+    .hero {
+        height: 60vw;
+        min-height: auto;
+    }
+    .hero-bg.header {
+        min-height: auto;
+        padding-top: 40px;
+        padding-bottom: 0px;
+    }
+}
+
+@media screen and (max-width: 767px) {
+    h2 {
+        font-size: 22px;
+    }
+    .hero {
+        height: 65vw;
+    }
+    .site {
+        padding-right: 15px;
+        padding-left: 15px;
+    }
+}
+
+@media screen and (max-width: 479px) {
+    h1 {
+        font-size: 6vw;
+    }
+    .hero {
+        height: 70vw;
+    }
+}
