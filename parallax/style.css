@@ -42,7 +42,7 @@ h2 {
     background-position: 50% 100%;
     background-size: 100%;
     background-repeat: no-repeat;
-    transition: all 85ms ease;
+    transition: all 25ms ease;
 }
 
 .hero-bg._1 {

@@ -76,6 +76,9 @@ nav button {
 nav button:hover {
     background-color: #36393f91;
 }
+nav button h5 {
+    margin: 0;
+}
 
 
 
