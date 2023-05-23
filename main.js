@@ -19,7 +19,7 @@ function OptionList(elem) {
 
 
 // Hacked Text Effect
-const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
 let interval = null;
 
@@ -35,7 +35,7 @@ document.querySelector("#hacked").onmouseover = (event) => {
                 if (index < iteration) {
                     return event.target.dataset.value[index];
                 };
-                return letters[Math.floor(Math.random() * 26)];
+                return characters[Math.floor(Math.random() * 36)];
             })
             .join("");
 
