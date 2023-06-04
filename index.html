@@ -139,6 +139,26 @@
         <h1 id='hacked' data-value="MRMYSTERY13">MRMYSTERY13</h1>
     </div>
 
+    <hr>
+
+    <div id="text-morph-con" class="flex">
+        <!-- Code Pen: https://codepen.io/Valgo/pen/PowZaNY -->
+        <span id="text-morph1"></span>
+        <span id="text-morph2"></span>
+        <svg id="filters">
+            <defs>
+                <filter id="threshold">
+                    <feColorMatrix in="SourceGraphic"
+                            type="matrix"
+                            values="1 0 0 0 0
+                                    0 1 0 0 0
+                                    0 0 1 0 0
+                                    0 0 0 255 -140" />
+                </filter>
+            </defs>
+        </svg>
+    </div>
+
 </body>
 
 </html>

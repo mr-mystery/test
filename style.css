@@ -225,3 +225,20 @@ nav button h5 {
     background-color: white;
     color: black;
 }
+
+
+
+/* Text Morph */
+
+@import url('https://fonts.googleapis.com/css?family=Raleway:900&display=swap');
+
+#text-morph-con {
+	filter: url(#threshold) blur(0.6px);
+}
+
+#text-morph1, #text-morph2 {
+	position: absolute;
+	font-family: 'Raleway', sans-serif;
+	font-size: clamp(3rem, 6.25vw, 10rem);
+	user-select: none;
+}
