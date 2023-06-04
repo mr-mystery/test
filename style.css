@@ -233,7 +233,7 @@ nav button h5 {
 @import url('https://fonts.googleapis.com/css?family=Raleway:900&display=swap');
 
 #text-morph-con {
-	filter: url(#threshold) blur(0.6px);
+	filter: url(#morph-threshold) blur(0.6px);
 }
 
 #text-morph1, #text-morph2 {
