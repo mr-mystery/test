@@ -21,7 +21,9 @@ hr {
     justify-content: center;
     align-items: center;
 }
-
+.flex-c {
+    flex-direction: column;
+}
 
 
 /* Scroll Bar */
@@ -222,7 +224,7 @@ nav button h5 {
 }
 
 #hacked:hover {
-    background-color: white;
+    background-color: #eee;
     color: black;
 }
 
@@ -235,10 +237,13 @@ nav button h5 {
 #text-morph-con {
 	filter: url(#morph-threshold) blur(0.6px);
 }
+#text-morph-con svg {
+    width: 100%;
+    height: 100%;
+}
 
 #text-morph1, #text-morph2 {
 	position: absolute;
 	font-family: 'Raleway', sans-serif;
 	font-size: clamp(3rem, 6.25vw, 10rem);
-	user-select: none;
 }

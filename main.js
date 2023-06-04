@@ -33,13 +33,13 @@ document.querySelector("#hacked").onmouseover = (event) => {
             .split("")
             .map((letter, index) => {
                 if (index < iteration) {
-                    return event.target.dataset.value[index];
+                    return event.target.dataset.hackedtext[index];
                 };
                 return characters[Math.floor(Math.random() * 36)];
             })
             .join("");
 
-        if (iteration >= event.target.dataset.value.length) {
+        if (iteration >= event.target.dataset.hackedtext.length) {
             clearInterval(interval);
         };
 
