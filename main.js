@@ -63,7 +63,9 @@ const texts = [
     "so",
     "satisfying",
     "to",
-    "watch?"
+    "watch?",
+    "Ez",
+    "😀"
 ];
 
 const morphTime = 1;
