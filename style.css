@@ -24,6 +24,9 @@ hr {
 .flex-c {
     flex-direction: column;
 }
+.flex-w {
+    flex-wrap: wrap;
+}
 
 
 /* Scroll Bar */
@@ -90,6 +93,7 @@ nav button h5 {
     display: flex;
     justify-content: center;
     padding: 55px 0px;
+    margin: 0;
     gap: 55px;
 }
 .spinBox {
@@ -205,6 +209,7 @@ nav button h5 {
 .resize {
     margin: 0px 20px;
     padding: 2rem;
+    text-align: center;
     border: 1px solid black;
     overflow: auto;
     resize: both;
@@ -235,6 +240,7 @@ nav button h5 {
 @import url('https://fonts.googleapis.com/css?family=Raleway:900&display=swap');
 
 #text-morph-con {
+    height: clamp(60px, 8vw, 150px);
 	filter: url(#morph-threshold) blur(0.6px);
 }
 #text-morph-con svg {
