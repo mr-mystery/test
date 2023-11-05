@@ -18,6 +18,16 @@ function OptionList(elem) {
 
 
 
+// Age counter
+const launchDate = new Date('January 2, 2008, 12:00:00');
+setInterval(() => {
+    const ms = 365.25 * 24 * 60 * 60 * 1000;
+    const age = ( (Date.now() - launchDate.getTime()) / (ms) );
+    document.getElementById('ageCount').innerText = age;
+}, 100);
+
+
+
 // Hacked Text Effect
 const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
