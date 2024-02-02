@@ -21,7 +21,8 @@ function OptionList(elem) {
 // Age counter
 const launchDate = new Date('January 2, 2008, 12:00:00');
 setInterval(() => {
-    const ms = 365.25 * 24 * 60 * 60 * 1000;
+    const ms = 365.25 * 24 * 60 * 60 * 1000; // 31557600000
+    // const ms = 3.1709791983765 * (10**10);
     const age = ( (Date.now() - launchDate.getTime()) / (ms) );
     document.getElementById('ageCount').innerText = age;
 }, 100);
