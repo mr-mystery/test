@@ -20,6 +20,7 @@
 
     <link rel="stylesheet" href="./style.css">
     <script src="./main.js" defer></script>
+    <script src="./snow/snow.js" defer></script>
 
 </head>
 
@@ -55,6 +56,8 @@
 
         <a href="./parallax/index.html"><button><h5>Parallax</h5></button></a>
         <!-- https://webflow.com/made-in-webflow/website/NAV-challenge -->
+
+        <a href="#" onclick="snow()"><button><h5>Snow</h5></button></a>
     </nav>
 
     <hr>
@@ -161,6 +164,10 @@
             </svg>
         </div>
 
+    </div>
+
+    <div id="snow" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none;">
+        <canvas class="particles-js-canvas-el" style="width: 100%; height: 100%;"></canvas>
     </div>
 
 </body>
