@@ -1,0 +1,462 @@
+<!-- OLD NAME: First Person Shooter Game (ThreeJS).html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D FPS with Three.js</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+        #crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            border: 2px solid white;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        #minimap {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 150px;
+            height: 150px;
+        }
+        #score {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+        }
+        #enemy-timer {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: red;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        #restart-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+        }
+        #restart-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="crosshair"></div>
+    <canvas id="minimap"></canvas>
+    <div id="score">Score: 0</div>
+    <div id="enemy-timer"></div>
+    <div id="restart-screen" style="display: none;">
+        <h1>Game Over</h1>
+        <p>Your Score: <span id="final-score"></span></p>
+        <button id="restart-button">Restart Game</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Set up scene, camera, and renderer
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // Game variables
+        let score = 0;
+        let areaSize = 20;
+        let enemyContactTime = 0;
+        let isGameOver = false;
+
+        // Player variables
+        const playerHeight = 1.6;
+        const moveSpeed = 0.05;
+
+        // Create a floor
+        let floor;
+        function createFloor() {
+            if (floor) scene.remove(floor);
+            const floorGeometry = new THREE.PlaneGeometry(areaSize, areaSize);
+            const floorMaterial = new THREE.MeshBasicMaterial({ color: 0x808080, side: THREE.DoubleSide });
+            floor = new THREE.Mesh(floorGeometry, floorMaterial);
+            floor.rotation.x = Math.PI / 2;
+            scene.add(floor);
+        }
+        createFloor();
+
+        // // Create some obstacles (enemies)
+        const obstacles = [];
+        const obstacleGeometry = new THREE.BoxGeometry(1, 2, 1);
+        const obstacleMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const enemyMoveSpeed = 0.02;
+        const enemyPursuitSpeed = 0.04;
+        const enemyPursuitRange = 5;
+        function createObstacle() {
+            const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+            obstacle.position.set(
+                Math.random() * (areaSize - 2) - (areaSize / 2 - 1),
+                1,
+                Math.random() * (areaSize - 2) - (areaSize / 2 - 1)
+            );
+            obstacle.velocity = new THREE.Vector3(
+                (Math.random() - 0.5) * 2 * enemyMoveSpeed,
+                0,
+                (Math.random() - 0.5) * 2 * enemyMoveSpeed
+            );
+            obstacle.isPursuing = false;
+            scene.add(obstacle);
+            obstacles.push(obstacle);
+        }
+        for (let i = 0; i < 5; i++) {
+            createObstacle();
+        }
+
+        // Set up camera position
+        camera.position.y = playerHeight;
+
+        // Mouse look controls
+        let pitch = 0;
+        let yaw = 0;
+        const pitchObject = new THREE.Object3D();
+        pitchObject.add(camera);
+        const yawObject = new THREE.Object3D();
+        yawObject.position.y = playerHeight;
+        yawObject.add(pitchObject);
+        scene.add(yawObject);
+
+        document.addEventListener('mousemove', (event) => {
+            if (document.pointerLockElement === renderer.domElement) {
+                const movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+                const movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+
+                yaw -= movementX * 0.002;
+                pitch -= movementY * 0.002;
+                pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
+
+                yawObject.rotation.y = yaw;
+                pitchObject.rotation.x = pitch;
+            }
+        });
+
+        // Lock pointer
+        renderer.domElement.addEventListener('click', () => {
+            if (!isGameOver) {
+                renderer.domElement.requestPointerLock();
+            }
+        });
+
+        // Movement
+        const velocity = new THREE.Vector3();
+        const direction = new THREE.Vector3();
+        let moveForward = false;
+        let moveBackward = false;
+        let moveLeft = false;
+        let moveRight = false;
+
+        const onKeyDown = (event) => {
+            if (isGameOver) return;
+            switch (event.code) {
+                case 'KeyW': moveForward = true; break;
+                case 'KeyD': moveLeft = true; break;
+                case 'KeyS': moveBackward = true; break;
+                case 'KeyA': moveRight = true; break;
+            }
+        };
+
+        const onKeyUp = (event) => {
+            switch (event.code) {
+                case 'KeyW': moveForward = false; break;
+                case 'KeyD': moveLeft = false; break;
+                case 'KeyS': moveBackward = false; break;
+                case 'KeyA': moveRight = false; break;
+            }
+        };
+
+        document.addEventListener('keydown', onKeyDown);
+        document.addEventListener('keyup', onKeyUp);
+
+        // Shooting
+        const bulletGeometry = new THREE.SphereGeometry(0.05, 8, 8);
+        const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+        const bullets = [];
+
+        document.addEventListener('click', () => {
+            if (document.pointerLockElement === renderer.domElement && !isGameOver) {
+                const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
+                bullet.position.set(
+                    yawObject.position.x,
+                    yawObject.position.y + playerHeight,
+                    yawObject.position.z
+                );
+                bullet.velocity = new THREE.Vector3(
+                    -Math.sin(yawObject.rotation.y) * Math.cos(pitchObject.rotation.x),
+                    Math.sin(pitchObject.rotation.x),
+                    -Math.cos(yawObject.rotation.y) * Math.cos(pitchObject.rotation.x)
+                );
+                bullet.alive = true;
+                setTimeout(() => {
+                    bullet.alive = false;
+                    scene.remove(bullet);
+                }, 1000);
+
+                bullets.push(bullet);
+                scene.add(bullet);
+            }
+        });
+
+        // Mini-map
+        const minimapCanvas = document.getElementById('minimap');
+        const minimapCtx = minimapCanvas.getContext('2d');
+        minimapCanvas.width = 150;
+        minimapCanvas.height = 150;
+
+        function updateMinimap() {
+            minimapCtx.fillStyle = '#808080';  // Same color as the floor
+            minimapCtx.fillRect(0, 0, minimapCanvas.width, minimapCanvas.height);
+
+            const mapScale = minimapCanvas.width / areaSize;
+
+            // Draw obstacles
+            minimapCtx.fillStyle = 'green';
+            obstacles.forEach(obstacle => {
+                minimapCtx.fillRect(
+                    (obstacle.position.x + areaSize / 2) * mapScale,
+                    (obstacle.position.z + areaSize / 2) * mapScale,
+                    mapScale,
+                    mapScale
+                );
+            });
+
+            // Draw player
+            minimapCtx.fillStyle = 'blue';
+            minimapCtx.beginPath();
+            minimapCtx.arc(
+                (yawObject.position.x + areaSize / 2) * mapScale,
+                (yawObject.position.z + areaSize / 2) * mapScale,
+                3,
+                0,
+                2 * Math.PI
+            );
+            minimapCtx.fill();
+
+            // Draw player direction
+            minimapCtx.strokeStyle = 'white';
+            minimapCtx.beginPath();
+            minimapCtx.moveTo(
+                (yawObject.position.x + areaSize / 2) * mapScale,
+                (yawObject.position.z + areaSize / 2) * mapScale
+            );
+            minimapCtx.lineTo(
+                (yawObject.position.x - Math.sin(yawObject.rotation.y) + areaSize / 2) * mapScale,
+                (yawObject.position.z - Math.cos(yawObject.rotation.y) + areaSize / 2) * mapScale
+            );
+            minimapCtx.stroke();
+        }
+
+        function updateEnemyTimer() {
+            const timerElement = document.getElementById('enemy-timer');
+            if (enemyContactTime > 0) {
+                timerElement.textContent = `Enemy Contact: ${(3 - enemyContactTime).toFixed(1)}s`;
+            } else {
+                timerElement.textContent = '';
+            }
+        }
+
+        function gameOver() {
+            isGameOver = true;
+            document.exitPointerLock();
+            document.getElementById('restart-screen').style.display = 'flex';
+            document.getElementById('final-score').textContent = score;
+        }
+
+        function restartGame() {
+            score = 0;
+            areaSize = 20;
+            enemyContactTime = 0;
+            isGameOver = false;
+            
+            // Reset player position
+            yawObject.position.set(0, playerHeight, 0);
+            
+            // Remove all obstacles and bullets
+            obstacles.forEach(obstacle => scene.remove(obstacle));
+            obstacles.length = 0;
+            bullets.forEach(bullet => scene.remove(bullet));
+            bullets.length = 0;
+            
+            // Create new obstacles
+            for (let i = 0; i < 5; i++) {
+                createObstacle();
+            }
+            
+            createFloor();
+            
+            document.getElementById('restart-screen').style.display = 'none';
+            document.getElementById('score').textContent = 'Score: 0';
+        }
+
+        document.getElementById('restart-button').addEventListener('click', restartGame);
+
+        function updateEnemyMovement() {
+            obstacles.forEach(obstacle => {
+                const distanceToPlayer = obstacle.position.distanceTo(yawObject.position);
+                
+                if (distanceToPlayer <= enemyPursuitRange) {
+                    // Enemy is within pursuit range, move towards player
+                    obstacle.isPursuing = true;
+                    const direction = new THREE.Vector3()
+                        .subVectors(yawObject.position, obstacle.position)
+                        .normalize();
+                    obstacle.velocity.copy(direction.multiplyScalar(enemyPursuitSpeed));
+                } else if (obstacle.isPursuing) {
+                    // Enemy was pursuing but player is now out of range, return to random movement
+                    obstacle.isPursuing = false;
+                    obstacle.velocity.set(
+                        (Math.random() - 0.5) * 2 * enemyMoveSpeed,
+                        0,
+                        (Math.random() - 0.5) * 2 * enemyMoveSpeed
+                    );
+                }
+
+                obstacle.position.add(obstacle.velocity);
+                
+                // Bounce off walls
+                if (Math.abs(obstacle.position.x) > areaSize / 2 - 0.5) {
+                    obstacle.velocity.x *= -1;
+                    obstacle.position.x = Math.sign(obstacle.position.x) * (areaSize / 2 - 0.5);
+                }
+                if (Math.abs(obstacle.position.z) > areaSize / 2 - 0.5) {
+                    obstacle.velocity.z *= -1;
+                    obstacle.position.z = Math.sign(obstacle.position.z) * (areaSize / 2 - 0.5);
+                }
+            });
+        }
+
+        // Game loop
+        const animate = () => {
+            requestAnimationFrame(animate);
+
+            if (!isGameOver) {
+                // Movement
+                direction.z = Number(moveForward) - Number(moveBackward);
+                direction.x = Number(moveRight) - Number(moveLeft);
+                direction.normalize();
+
+                if (moveForward || moveBackward) velocity.z -= direction.z * moveSpeed;
+                if (moveLeft || moveRight) velocity.x -= direction.x * moveSpeed;
+
+                yawObject.translateX(velocity.x);
+                yawObject.translateZ(velocity.z);
+
+                // Constrain player within the box
+                yawObject.position.x = Math.max(-areaSize / 2, Math.min(areaSize / 2, yawObject.position.x));
+                yawObject.position.z = Math.max(-areaSize / 2, Math.min(areaSize / 2, yawObject.position.z));
+
+                velocity.x *= 0.9;
+                velocity.z *= 0.9;
+
+                // Update bullets
+                for (let i = 0; i < bullets.length; i++) {
+                    if (bullets[i].alive) {
+                        bullets[i].position.add(bullets[i].velocity);
+                        
+                        // Check for collisions with obstacles
+                        for (let j = obstacles.length - 1; j >= 0; j--) {
+                            if (bullets[i].position.distanceTo(obstacles[j].position) < 0.5) {
+                                // Remove the obstacle
+                                scene.remove(obstacles[j]);
+                                obstacles.splice(j, 1);
+
+                                // Remove the bullet
+                                bullets[i].alive = false;
+                                scene.remove(bullets[i]);
+
+                                // Increase score and update display
+                                score++;
+                                document.getElementById('score').textContent = `Score: ${score}`;
+
+                                // Expand the area and add a new obstacle
+                                areaSize += 2;
+                                createFloor();
+                                createObstacle();
+
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // Clean up dead bullets
+                bullets.forEach((bullet, index) => {
+                    if (!bullet.alive) {
+                        bullets.splice(index, 1);
+                    }
+                });
+
+                // Update enemy movement
+                updateEnemyMovement();
+
+                // Check for player contact
+                let playerInContact = false;
+                obstacles.forEach(obstacle => {
+                    if (obstacle.position.distanceTo(yawObject.position) < 1) {
+                        playerInContact = true;
+                    }
+                });
+
+                // Update enemy contact timer
+                if (playerInContact) {
+                    enemyContactTime += 1/60;  // Assuming 60 FPS
+                    if (enemyContactTime >= 3) {
+                        gameOver();
+                    }
+                } else {
+                    enemyContactTime = 0;
+                }
+
+                updateEnemyTimer();
+
+                // Update minimap
+                updateMinimap();
+            }
+
+            // Render
+            renderer.render(scene, camera);
+        };
+
+        animate();
+
+        // Handle window resizing
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
