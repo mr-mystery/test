@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Tic-Tac-Toe</title>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.168.0/build/three.module.js",
+        "three/examples/jsm/controls/OrbitControls": "https://cdn.jsdelivr.net/npm/three@0.168.0/examples/jsm/controls/OrbitControls.js"
+      }
+    }
+    </script>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-family: Arial, sans-serif;
+            background-color: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #symbolSwitch, #resetGame {
+            margin-top: 10px;
+            cursor: pointer;
+            background-color: #333;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <p>Current Player: <span id="currentPlayer"></span></p>
+        <p>Your Symbol: <span id="playerSymbol"></span></p>
+        <p id="winnerInfo"></p>
+        <button id="symbolSwitch">Switch Symbol</button>
+        <button id="resetGame">Reset Game</button>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js';
+        import { getDatabase, ref, set, onValue, push, child } from 'https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzXY7Y_bmq6UkBQJJs5JN1gZna2F6zHqo",
+            authDomain: "firetictactoe-sb.firebaseapp.com",
+            databaseURL: "https://firetictactoe-sb-default-rtdb.firebaseio.com",
+            projectId: "firetictactoe-sb",
+            storageBucket: "firetictactoe-sb.appspot.com",
+            messagingSenderId: "1080370440232",
+            appId: "1:1080370440232:web:a609709685cfcad54f2d1d"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let scene, camera, renderer, controls;
+        let raycaster, mouse;
+        let gridGroup;
+        let game = {
+            board: Array(27).fill(null),
+            currentPlayer: 'X',
+            gameId: null,
+            players: {},
+            winner: null
+        };
+        let playerId;
+        let currentSymbol = 'X';
+
+        function init() {
+            // Three.js setup
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+            // Create a 3x3x3 grid
+            gridGroup = new THREE.Group();
+            for (let x = -1; x <= 1; x++) {
+                for (let y = -1; y <= 1; y++) {
+                    for (let z = -1; z <= 1; z++) {
+                        const geometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+                        const material = new THREE.MeshBasicMaterial({ color: 0xcccccc, transparent: true, opacity: 0.5 });
+                        const cube = new THREE.Mesh(geometry, material);
+                        cube.position.set(x, y, z);
+                        cube.userData.index = (x + 1) + (y + 1) * 3 + (z + 1) * 9;
+                        gridGroup.add(cube);
+                    }
+                }
+            }
+            scene.add(gridGroup);
+
+            camera.position.set(3, 3, 3);
+            controls.update();
+
+            // Firebase setup
+            const gameRef = ref(database, 'games');
+            const newGameRef = push(gameRef);
+            game.gameId = newGameRef.key;
+
+            onValue(child(gameRef, game.gameId), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    game = {
+                        ...game,
+                        ...data,
+                        board: Array.isArray(data.board) ? data.board : Array(27).fill(null)
+                    };
+                    updateUI();
+                    updateBoard();
+                }
+            });
+
+            // Set up player
+            playerId = Math.random().toString(36).substr(2, 9);
+            set(child(newGameRef, `players/${playerId}`), { symbol: currentSymbol });
+
+            // Set initial game state
+            set(ref(database, `games/${game.gameId}`), game);
+
+            // Event listeners
+            window.addEventListener('resize', onWindowResize, false);
+            renderer.domElement.addEventListener('click', onDocumentMouseDown, false);
+            document.getElementById('symbolSwitch').addEventListener('click', toggleSymbol);
+            document.getElementById('resetGame').addEventListener('click', resetGame);
+
+            animate();
+            updateUI();
+        }
+
+        function toggleSymbol() {
+            currentSymbol = currentSymbol === 'X' ? 'O' : 'X';
+            game.players[playerId]?.symbol === 'X' ? 'O' : 'X';
+            document.getElementById('playerSymbol').textContent = currentSymbol;
+        }
+
+        function resetGame() {
+            // Reset the game state
+            game.board = Array(27).fill(null);
+            game.currentPlayer = 'X';
+            game.winner = null;
+
+            // Update Firebase with reset game state
+            set(ref(database, `games/${game.gameId}`), game);
+
+            updateUI();
+            updateBoard();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // function onDocumentMouseDown(event) {
+        //     event.preventDefault();
+
+        //     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        //     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        //     raycaster.setFromCamera(mouse, camera);
+
+        //     const intersects = raycaster.intersectObjects(gridGroup.children, true);
+
+        //     if (intersects.length > 0) {
+        //         const clickedCube = intersects[0].object;
+        //         if (clickedCube.userData.index !== undefined) {
+        //             handleMove(clickedCube.userData.index);
+        //         }
+        //     }
+        // }
+
+        // function onDocumentMouseDown(event) {
+        //     event.preventDefault();
+
+        //     // Calculate mouse position in normalized device coordinates (-1 to +1 range)
+        //     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        //     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        //     // Update the raycaster with the current mouse position and camera
+        //     raycaster.setFromCamera(mouse, camera);
+
+        //     // Get the list of objects intersected by the raycaster
+        //     const intersects = raycaster.intersectObjects(gridGroup.children, true);
+
+        //     // Ensure an object was clicked
+        //     if (intersects.length > 0) {
+        //         const clickedCube = intersects[0].object;
+        //         // Ensure the clicked cube has a valid index and is empty
+        //         if (clickedCube.userData.index !== undefined && game.board[clickedCube.userData.index] === null) {
+        //             // Call the move handler to process the move
+        //             handleMove(clickedCube.userData.index);
+        //         }
+        //     }
+        // }
+
+        function onDocumentMouseDown(event) {
+            event.preventDefault();
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            
+            // Log the normalized mouse coordinates for debugging
+            console.log("Mouse position:", mouse);
+
+            const intersects = raycaster.intersectObjects(gridGroup.children);
+
+            // Log intersection data
+            console.log("Intersections:", intersects);
+
+            if (intersects.length > 0) {
+                const clickedCube = intersects[0].object;
+                console.log("Clicked Cube:", clickedCube);
+
+                if (clickedCube.userData.index !== undefined) {
+                    const cubeIndex = clickedCube.userData.index;
+                    console.log("Clicked Cube Index:", cubeIndex);
+
+                    if (game.board[cubeIndex] === null && !game.winner) {
+                        handleMove(cubeIndex);
+                        console.log(game.board)
+                    }
+                }
+            }
+        }
+
+
+        function handleMove(index) {
+            console.log("32423432342")
+            console.log(game.board[index] == null)
+            console.log(!game.winner)
+            console.log(game.players[playerId]?.symbol == currentSymbol)
+            console.log(game.players[playerId]?.symbol)
+            if (game.board[index] == null && !game.winner && game.players[playerId]?.symbol == currentSymbol) {
+                const newBoard = [...game.board];
+                newBoard[index] = currentSymbol;
+                game = {
+                    ...game,
+                    board: newBoard,
+                    currentPlayer: currentSymbol === 'X' ? 'O' : 'X',
+                };
+
+                // Check for winner
+                const winner = checkWinner(newBoard);
+                if (winner) {
+                    game.winner = winner;
+                }
+
+                set(ref(database, `games/${game.gameId}`), game);
+                updateUI();
+                console.log("EHJKFDKJSHGD")
+                updateBoard();
+            }
+        }
+
+        function checkWinner(board) {
+            const lines = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], // Horizontal
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], // Vertical
+                [0, 4, 8], [2, 4, 6], // Diagonal
+                // 3D diagonals
+                [0, 4, 8], [2, 4, 6], [18, 22, 26], [20, 22, 24],
+                [0, 13, 26], [2, 13, 24], [6, 13, 20], [8, 13, 18],
+            ];
+
+            for (let line of lines) {
+                const [a, b, c] = line;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return board[a];
+                }
+            }
+
+            return null;
+        }
+
+        // function updateBoard() {
+        //     scene.children = scene.children.filter(child => child === gridGroup);
+
+        //     if (Array.isArray(game.board)) {
+        //         game.board.forEach((symbol, index) => {
+        //             if (symbol) {
+        //                 addSymbol(index, symbol);
+        //             }
+        //         });
+        //     }
+        // }
+
+        // function addSymbol(index, symbol) {
+        //     const position = indexToPosition(index);
+
+        //     let geometry, material;
+        //     if (symbol === 'X') {
+        //         geometry = new THREE.BoxGeometry(0.5, 0.1, 0.1);
+        //         material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        //         const xPart1 = new THREE.Mesh(geometry, material);
+        //         const xPart2 = new THREE.Mesh(geometry, material);
+        //         xPart1.position.set(...position);
+        //         xPart2.position.set(...position);
+        //         xPart1.rotation.z = Math.PI / 4;
+        //         xPart2.rotation.z = -Math.PI / 4;
+        //         scene.add(xPart1, xPart2);
+        //     } else {
+        //         geometry = new THREE.TorusGeometry(0.3, 0.1, 16, 100);
+        //         material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+        //         const o = new THREE.Mesh(geometry, material);
+        //         o.position.set(...position);
+        //         scene.add(o);
+        //     }
+        // }
+
+        function updateBoard() {
+    // Clear old symbols
+    for (let i = scene.children.length - 1; i >= 0; i--) {
+        const child = scene.children[i];
+        if (child !== gridGroup) {
+            scene.remove(child);
+        }
+    }
+
+    // Log the board state for debugging
+    console.log("Board State:", game.board);
+
+    // Render symbols
+    game.board.forEach((symbol, index) => {
+        if (symbol) {
+            console.log(`Rendering symbol ${symbol} at index ${index}`);
+            addSymbol(index, symbol);
+        }
+    });
+}
+
+function addSymbol(index, symbol) {
+    const position = indexToPosition(index);
+
+    let geometry, material;
+    if (symbol === 'X') {
+        geometry = new THREE.BoxGeometry(0.5, 0.1, 0.1);
+        material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const xPart1 = new THREE.Mesh(geometry, material);
+        const xPart2 = new THREE.Mesh(geometry, material);
+
+        xPart1.position.set(...position);
+        xPart2.position.set(...position);
+
+        xPart1.rotation.z = Math.PI / 4;
+        xPart2.rotation.z = -Math.PI / 4;
+
+        scene.add(xPart1, xPart2); // Add both parts of the 'X'
+    } else if (symbol === 'O') {
+        geometry = new THREE.TorusGeometry(0.3, 0.1, 16, 100);
+        material = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+
+        const o = new THREE.Mesh(geometry, material);
+        o.position.set(...position);
+
+        scene.add(o); // Add the 'O'
+    }
+}
+function indexToPosition(index) {
+    const x = (index % 3) - 1;
+    const y = Math.floor((index % 9) / 3) - 1;
+    const z = Math.floor(index / 9) - 1;
+    return [x, y, z];
+}
+
+
+        // function indexToPosition(index) {
+        //     const x = (index % 3) - 1;
+        //     const y = Math.floor((index % 9) / 3) - 1;
+        //     const z = Math.floor(index / 9) - 1;
+        //     return [x, y, z];
+        // }
+
+        function updateUI() {
+            document.getElementById('currentPlayer').textContent = game.currentPlayer;
+            document.getElementById('playerSymbol').textContent = currentSymbol;
+            const winnerInfo = document.getElementById('winnerInfo');
+            if (game.winner) {
+                winnerInfo.textContent = `Winner: ${game.winner}`;
+            } else {
+                winnerInfo.textContent = '';
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
